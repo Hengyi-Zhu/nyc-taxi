@@ -1,0 +1,125 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="A data science project on NYC Taxi and Uber trips.">
+    <meta name="author" content="Hengyi Zhu">
+    <link rel="icon" href='{{ url_for('static',filename='favicon.ico')}}'>
+
+    <title>New York Taxi</title>
+
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <link rel=stylesheet type=text/css href='{{ url_for('static',filename='ie10-viewport-bug-workaround.css')}}'>
+
+    <!-- Custom styles for this template -->
+    <link rel=stylesheet type=text/css href='{{ url_for('static',filename='dashboard.css')}}'>
+
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src='{{ url_for('static',filename='ie8-responsive-file-warning.js')}}'></script><![endif]-->
+    <script src='{{ url_for('static',filename='ie-emulation-modes-warning.js')}}'></script>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+      <style>
+    table {
+    border-collapse: separate;
+    border-spacing: 2em 0.5em;
+    }
+    </style>
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <a class="navbar-brand"><b>NYC Taxi Trips</b></a>
+          <a class="navbar-brand" href="https://github.com/Hengyi-Zhu/nyc-taxi" target="_blank" title="To the Github page."><span class="glyphicon glyphicon-knight" aria-hidden="true"></span></a>
+        </div>
+        <div class="navbar-brand navbar-right"><b>The Data Incubator Capstone Project by Hengyi (Harry) Zhu</b></div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            <li style="font-size:150%;"><a href="/index">Introduction</a></li> 
+          </ul>
+          <ul class="nav nav-sidebar">
+              <li style="font-size:150%;"><a><font color="black">Descriptive:</font></a></li>
+            <li style="font-size:130%;"><a href="/data">Data</a></li>
+            <li style="font-size:130%;"><a href="/overview">Overview</a></li>
+            <li style="font-size:130%;"><a href="/location">Location</a></li>
+            <li style="font-size:130%;"><a href="/time">Time</a></li>
+            <li style="font-size:130%;"><a href="/fare">Fare</a></li>
+          </ul>
+          <ul class="nav nav-sidebar">
+              <li style="font-size:150%;"><a><font color="black">Inferential:</font></a></li>
+            <li style="font-size:130%;"><a href="/ml1">Best Trips for Drivers</a></li>
+            <li style="font-size:130%;"><a href="/ml2">How Long Will My Trip Take <br> &amp; How much Should It Take</a></li>
+          </ul>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            <div class="container">
+            <h1 class="page-header">Best Trips for Drivers</h1>
+                
+                <h3>Implications</h3>
+                <ul>
+                  <li style="font-size:130%;">You maintain a baseline hourly revenue while driving roughly 0.4~0.5 mile per minute.</li>
+                  <li style="font-size:130%;">Night time (8pm to 6am)? Good time to work.</li>
+                  <li style="font-size:130%;">Rush hour (4pm to 8pm on weekdays)? Viewed alone, it seems to be a good time to work. However, if the traffic significantly slows you down (3-4 more minutes per trip than usual), you are worse off.</li>
+                  <li style="font-size:130%;"><a title="1= Standard rate; 2=JFK; 3=Newark; 4=Nassau or Westchester; 5=Negotiated fare; 6=Group ride">Non-standard-rate trips</a> are usually a lot better than the standard ones. Caveat: for flat-rate JFK trips, it is only worthwhile when the entire trip is less than 20 miles, which is usually the case.</li>
+                  <li style="font-size:130%;">Trips involing toll roads are good.</li>
+                  <li style="font-size:130%;">Doesn't really matter how many passengers there are.</li>
+                  <li style="font-size:130%;">Green cabs trips are slightly better than the yellow ones'.</li>
+                  <li style="font-size:130%;">Not much difference between weekdays for the whole year and the signs of the coefficients can be quite different for each month. Not very useful.</li>
+                  <li style="font-size:130%;">The aboves are only valid when you are driving a customer. The difficulty of finding a customer is not considered. Read the <a href="/location">Location</a> and <a href="/time">Time</a> section to get a better sense of the demand for taxi.</li>
+                </ul>
+                
+                <hr>
+                
+                <h3>The Model</h3>
+                <ul>
+                  <li style="font-size:130%;">The variables included in this model are the ones drivers can, to some extent, control.</li>
+                  <li style="font-size:130%;">Although there are a large amount of unexplained variations in it, this model and most of its variables are statistically significant.</li>
+                  <li style="font-size:130%;">The data used for the model shown below is created by combining random samples of size 10000 for each month in 2015 for both green and yellow cabs. Outliers (possibly due to inaccurate data entry) are removed. Then, a random sample of two thirds of the entire data is drawn.</li> 
+                  <li style="font-size:130%;">The same model is also implemented for each month. The signs and relative magnitudes of the most important variables are similar across different months.</li>
+                  <li style="font-size:130%;">Most of the variable names are self-explanatory.</li>
+                  <li style="font-size:130%;">The dependent variable <code>revenue_hourly</code> is calculated by (<code>fare_amount</code> + <code>extra</code>) / <code>trip_length_seconds</code> * 3600. It does not include tips since only credit-card-paid tips are recorded. It is revenue instead of profit as we are not considering any cost.</li>
+                  <li style="font-size:130%;"><code>Rate_code_id</code> is recoded into dummy variables, indicating whether the trip is a flat rate trip with its respective destination (JFK/Newark/Nassau or Westchester/Negotiated fare).</li>
+                  <li style="font-size:130%;"><code>JFK_trip_distance</code> is an interaction term. It is the same as the trip_distance for JFK trips and 0 for the others. This way, we can separate the effect of trip distance for metered trips and the flat-rate JFK trips. </li>
+                  <li style="font-size:130%;"><code>Extra</code> is recoded into dummy variables, indicating whether the trip is during rush hour or over night.</li>
+                  <li style="font-size:130%;"><code>Yellow_cab</code> is a dummy vairable; 1 for yellow cab, 0 otherwise (green cab).</li>
+                  <li style="font-size:130%;"><a href="http://www.nyc.gov/html/tlc/html/passenger/taxicab_rate.shtml" target="_blank">Taxicab Rate of Fare</a> for detailed descriptions on how the rates are calculated.</li>
+                </ul>
+                
+                <hr>
+                
+                <table class="simpletable"><caption style="font-size:150%;">OLS Regression Results</caption><tr>  <th>Dep. Variable:</th>     <td>revenue_hourly</td>  <th>  R-squared:         </th>  <td>   0.211</td>  </tr><tr>  <th>Model:</th>                   <td>OLS</td>       <th>  Adj. R-squared:    </th>  <td>   0.211</td>  </tr><tr>  <th>Method:</th>             <td>Least Squares</td>  <th>  F-statistic:       </th>  <td>   2345.</td>  </tr><tr>  <th>Date:</th>             <td>Thu, 30 Jun 2016</td> <th>  Prob (F-statistic):</th>   <td>  0.00</td>   </tr><tr>  <th>Time:</th>                 <td>11:13:04</td>     <th>  Log-Likelihood:    </th> <td>-7.7152e+05</td></tr><tr>  <th>No. Observations:</th>      <td>157660</td>      <th>  AIC:               </th>  <td>1.543e+06</td> </tr><tr>  <th>Df Residuals:</th>          <td>157641</td>      <th>  BIC:               </th>  <td>1.543e+06</td> </tr><tr>  <th>Df Model:</th>              <td>    18</td>      <th>                     </th>      <td> </td>     </tr><tr>  <th>Covariance Type:</th>      <td>nonrobust</td>    <th>                     </th>      <td> </td>     </tr></table><table class="simpletable"><tr>           <td></td>              <th>coef</th>     <th>std err</th>      <th>t</th>      <th>P>|t|</th> <th>[95.0% Conf. Int.]</th> </tr><tr>  <th>const</th>               <td>   73.4094</td> <td>    0.280</td> <td>  262.319</td> <td> 0.000</td> <td>   72.861    73.958</td></tr><tr>  <th>passenger_count</th>     <td>   -0.0162</td> <td>    0.068</td> <td>   -0.238</td> <td> 0.812</td> <td>   -0.149     0.117</td></tr><tr>  <th>trip_distance</th>       <td>    4.6118</td> <td>    0.048</td> <td>   95.309</td> <td> 0.000</td> <td>    4.517     4.707</td></tr><tr>  <th>JFK_trip_distance</th>   <td>  -23.0028</td> <td>    0.221</td> <td> -103.996</td> <td> 0.000</td> <td>  -23.436   -22.569</td></tr><tr>  <th>trip_length_minutes</th> <td>   -1.9371</td> <td>    0.013</td> <td> -152.206</td> <td> 0.000</td> <td>   -1.962    -1.912</td></tr><tr>  <th>monday</th>              <td>    0.2016</td> <td>    0.319</td> <td>    0.632</td> <td> 0.527</td> <td>   -0.423     0.826</td></tr><tr>  <th>tuesday</th>             <td>   -0.6401</td> <td>    0.317</td> <td>   -2.022</td> <td> 0.043</td> <td>   -1.260    -0.020</td></tr><tr>  <th>wednesday</th>           <td>   -0.5821</td> <td>    0.309</td> <td>   -1.883</td> <td> 0.060</td> <td>   -1.188     0.024</td></tr><tr>  <th>thursday</th>            <td>   -0.6184</td> <td>    0.306</td> <td>   -2.019</td> <td> 0.043</td> <td>   -1.219    -0.018</td></tr><tr>  <th>friday</th>              <td>   -0.7296</td> <td>    0.300</td> <td>   -2.431</td> <td> 0.015</td> <td>   -1.318    -0.141</td></tr><tr>  <th>saturday</th>            <td>   -0.6368</td> <td>    0.293</td> <td>   -2.176</td> <td> 0.030</td> <td>   -1.210    -0.063</td></tr><tr>  <th>JFK</th>                 <td>  433.1118</td> <td>    4.005</td> <td>  108.149</td> <td> 0.000</td> <td>  425.263   440.961</td></tr><tr>  <th>Newark</th>              <td>   40.9435</td> <td>    2.634</td> <td>   15.542</td> <td> 0.000</td> <td>   35.780    46.107</td></tr><tr>  <th>Nassau_Westchester</th>  <td>   28.9206</td> <td>    3.731</td> <td>    7.752</td> <td> 0.000</td> <td>   21.609    36.232</td></tr><tr>  <th>Negotiated</th>          <td>   47.5105</td> <td>    0.951</td> <td>   49.982</td> <td> 0.000</td> <td>   45.647    49.374</td></tr><tr>  <th>tolls_amount</th>        <td>    0.7484</td> <td>    0.091</td> <td>    8.254</td> <td> 0.000</td> <td>    0.571     0.926</td></tr><tr>  <th>yellow_cab</th>          <td>   -0.8658</td> <td>    0.167</td> <td>   -5.200</td> <td> 0.000</td> <td>   -1.192    -0.539</td></tr><tr>  <th>rush_hour</th>           <td>    6.3351</td> <td>    0.248</td> <td>   25.568</td> <td> 0.000</td> <td>    5.849     6.821</td></tr><tr>  <th>over_night</th>          <td>    5.0159</td> <td>    0.184</td> <td>   27.227</td> <td> 0.000</td> <td>    4.655     5.377</td></tr></table><table class="simpletable"><tr>  <th>Omnibus:</th>       <td>580327.281</td> <th>  Durbin-Watson:     </th>     <td>   2.001</td>    </tr><tr>  <th>Prob(Omnibus):</th>   <td> 0.000</td>   <th>  Jarque-Bera (JB):  </th> <td>633648883694.155</td></tr><tr>  <th>Skew:</th>            <td>78.972</td>   <th>  Prob(JB):          </th>     <td>    0.00</td>    </tr><tr>  <th>Kurtosis:</th>       <td>9823.035</td>  <th>  Cond. No.          </th>     <td>    881.</td>    </tr></table>  
+                
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src='{{ url_for('static',filename='jquery.min.js')}}'><\/script>')</script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src='{{ url_for('static',filename='ie10-viewport-bug-workaround.js')}}'></script>
+  </body>
+</html>
